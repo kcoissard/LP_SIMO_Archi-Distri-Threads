@@ -5,8 +5,13 @@ import java.util.ArrayList;
 import Archi_Distri_TP1.Client;
 
 public class FileAttente {
-
-	private int taille_file;
+	
+//ajout
+	//const
+	public static final int PLACES_FILE_ATTENTE = 4;
+	
+	//var
+	private int taille_file=PLACES_FILE_ATTENTE;
 	ArrayList<Client> fileAttente; 
 	
    public FileAttente(int taille_file) {
@@ -16,7 +21,7 @@ public class FileAttente {
    
    
    /*
-    * retourne vrai si la file est vide 
+    * Retourne vrai si la file est vide
     */
    public boolean estVide() {
 	   //test sur la liste directement
@@ -25,7 +30,7 @@ public class FileAttente {
 
    
    /*
-    * retourne vrai si le client est premie
+    * Retourne vrai si le client est premier
     */
    public boolean estPremier(Client client) {     
 	   //on récupère le premier de la liste - First in First out
@@ -34,9 +39,9 @@ public class FileAttente {
    
    
    /*
-    * retourne 0 si le client peut entrer dans la file
+    * Retourne 0 si le client peut entrer dans la file
     * Si oui, le client est alors automatiquement inséré dans la file.
-    * sinon retourne -1 
+    * Si non retourne -1 
     */
    public int entrer(Client client) {
 	   int file = -1;
@@ -57,16 +62,12 @@ public class FileAttente {
    
    
    /*
-    * retourne vrai si le client est premier de la file
-    * Si oui, le client est alors automatiquement retiré de la file.
+    * /!\ SECTION CRITIQUE
     */
-   synchronized public boolean sortir(Client client) {
-      boolean res = false;
+   synchronized public void sortir(Client client) {
+      //S'il y a suppression de la file, on réveil les autres clients
       if (fileAttente.remove(client)) {
     	  notifyAll();
-    	  res = false; 
       }
-          
-      return false;
    }
 }

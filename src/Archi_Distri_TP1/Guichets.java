@@ -1,45 +1,51 @@
 package Archi_Distri_TP1;
 
-import Archi_Distri_TP1.Client;
+import java.util.ArrayList;
 
-
-/*
- * nombre limité de guichets.
- * 
- * • entrer(Client c) : affecte le client à un guichet s’il y en a un de libre ;
- *  si c’est le cas, la méthode doit retourné le numéro du guichet choisi. 
- *  
- *  
- */
 public class Guichets {
 	
-	private int nb_guichets;
+//const
+	public static final int NOMBRE_GUICHETS = 2;
+
+//var
+	private int nb_guichets=NOMBRE_GUICHETS;
+	ArrayList<Client> listGuichets;
+	
 
    public Guichets(int nb_guichets) {
-	   this.nb_guichets=nb_guichets;
+	   listGuichets = new ArrayList<Client>(nb_guichets);
+	   this.nb_guichets = nb_guichets;
    }
    
    /*
-    * affecte le client à un guichet s’il y en a un de libre
-    * si c’est le cas, la méthode doit retourné le numéro du guichet choisi.
+    * /!\ SECTION CRITIQUE
+    * Retourne le num du guicher s’il y en a un de libre et qu'un client y est affecté
+    * Sinon retourne -1 car il n'y a pas de guichet dispo
     */
-   public int entrer(Client client) {
-      int guichet = -1;
-   
-         // A completer
-      
-      return guichet;
+   synchronized public int entrer(Client client) {
+	  int num_guichet = -1;
+	  //test de la dispo du guichet en fonction de la liste reçue
+      if(listGuichets.size()<nb_guichets){
+    	  //ajout du client au guichet
+    	  listGuichets.add(client);
+    	  //on retourne le num du guichet
+    	  num_guichet = listGuichets.indexOf(client);
+      } else{
+    	  //sinon on attend qu'un guichet se libère
+       	  try {wait();}
+       	  catch (InterruptedException e) {}
+      }
+      return num_guichet;
    }
    
    
    /*
-    * retourne vrai si le client est associé au guichet donné en paramètre
-    *  Si oui, le guichet devient libre.
+    * pour que le client quitte le guichet
     */
-   public boolean quitter(Client client, int guichet) {
-      boolean res = false;
-      
-         // A completer
-      return false;
+   public void quitter(Client client, int guichet) {
+	 //S'il quitte le guichet, on réveil les autres clients
+      if (listGuichets.remove(client)) {
+    	  notifyAll();
+      }
    }
 }

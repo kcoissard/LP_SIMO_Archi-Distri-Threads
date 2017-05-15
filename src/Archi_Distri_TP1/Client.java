@@ -1,8 +1,5 @@
 package Archi_Distri_TP1;
 
-import java.util.Arrays;
-import java.util.List;
-
 import Archi_Distri_TP1.Guichets;
 import Archi_Distri_TP1.FileAttente;
 
@@ -15,79 +12,103 @@ public class Client extends Thread {
 	public static final String ETAT_GUICHET = "Au guichet.";
 	public static final String ETAT_PARTIR = "sort du bureau de poste.";
 	
-	public static final int PLACES_FILE_ATTENTE = 4;
-	public static final int NOMBRE_GUICHETS = 2;
+	public static final int PLACES_FILE_ATTENTE = 2;
+	public static final int NOMBRE_GUICHETS = 1;
 	
-	//var
+	private String thread;
 	private String etat=ETAT_NOUVEAU;
-	private int places_file_attente;
-	private int nb_guichets;
-	private String nom;
 	
 	private static Guichets guichets = new Guichets(NOMBRE_GUICHETS);
 	private static FileAttente file = new FileAttente(PLACES_FILE_ATTENTE);
 
 	
-	public Client(String nom){
+	public Client(String thread){
 		super();
-		this.nom = nom;
+		this.thread = thread;
 	}
 
-   public void run() {   
+	public void run() {   
 	   boolean fin = false;
 	  
 	      while (! fin) {
-	    	  // Si la file d'attente est vide et que le client est nouveau
-	    	  if(file.estVide() && etat.equals("Nouveau client.")) {
-	    		  System.out.println(this.nom +" voit que la file est vide);
-	    		  
-	    		  int guichet = this.guichet.entrer(this);
-	    		  
-	    		  // Le client va directement au guichet
-	    		  if (guichet != -1) { 
-	    			  entrerGuichet(guichet);
-	        		  fin = true;
+	    	  //en arrivant ici tout le monde est nouveau
+	    	  if(etat.equals(ETAT_NOUVEAU)){
+	    		  //si la file d'attende est vide
+	    		  if(file.estVide()){
+	    			//guichet dispo -> on récupère son numéro et on entre dedans
+		    		  int guichet = Client.guichets.entrer(this);
+		    		  // Le client va directement au guichet si y'en a un de dispo
+		    		  if (guichet != -1) { 
+		    			  entrerGuichet(guichet);
+		        		  fin = true;
+		        		//si guichet pas dispo
+		    		  }else{
+		    			  //si la file d'attente n'est pas pleine, on y rentre
+		    			  if(file.entrer(this)!=-1){
+		    				  System.out.println(this.thread +" voit que tous les guichets sont occupés");
+			        		  System.out.println(this.thread +" entre dans la file et attend");
+			        		  //maj de son état
+			        		  this.etat = ETAT_ATTENTE;
+		    			  }
+		    			  else{
+		    				//maj de son état
+		    				  System.out.println("Il n'y a pas de place dans la file d'attente.");
+			        		  this.etat = ETAT_PARTIR;
+			        		  System.out.println(this.thread + " " + this.etat);
+			        		  fin = true;
+		    			  }
+		    		  }
 	    		  }
-	    		  //s'il n'y a plus de place, il attend
-	    		  else if (file.entrer(this)!=-1) {
-	    			  System.out.println(this.nom +" voit que tous les guichets sont occupés");
-	        		  System.out.println(this.nom +" entre dans la file et attend");
-	        		  //maj de son état
-	        		  this.etat = ETAT_ATTENTE;
-	    		  }
-	    		  // si le client qui attend est premier de la file
-	    	  } else if (etat.equals("En attente.")) {
-	    		  //manque une condition ici
-	    		  int guichet = this.guichet.entrer(this);
-	    		  
-	    		  // on réessaie de le faire aller au guichet
-	    		  if (guichet != -1) {
-	    			  entrerGuichet(guichet);
-	        		  fin = true;
-	    		  }
-	    		// Si la file d'attente n'est pas vide et que le client est nouveau
-	    	  } else { 
-	    		  // si la file n'est pas pleine, le client y rentre
-	    		  if (file.entrer(this)!=-1) {
-	    			  System.out.println(this.nom +" voit que tous les guichets sont occupés");
-	        		  System.out.println(this.nom +" entre dans la file et attend");
-	        		  //maj de son état
-	        		  this.etat = ETAT_ATTENTE;
-	        		// Sinon il ressort du bureau de poste
-	    		  } else {
-	    			  System.out.println(this.nom +" voit qu'il y a trop de monde dans la file d'attente et décide de revenir un autre jour");
-	        		  this.etat = ETAT_PARTIR;
-	        		  fin = true;
+	    		  //si la file n'est pas vide, il y va
+	    		  else{
+	    			  if(file.entrer(this)!=-1){
+	    				  System.out.println(this.thread +" voit que tous les guichets sont occupés");
+		        		  System.out.println(this.thread +" entre dans la file et attend");
+		        		  //maj de son état
+		        		  this.etat = ETAT_ATTENTE;
+	    			  }
+	    			  else{
+	    				//maj de son état
+	    				  System.out.println("Il n'y a pas de place dans la file d'attente.");
+		        		  this.etat = ETAT_PARTIR;
+		        		  System.out.println(this.thread + " " + this.etat);
+		        		  fin = true;
+	    			  }
 	    		  }
 	    	  }
-   }
-   
+    		  //client en attente
+    		  else if(etat.equals(ETAT_ATTENTE)){
+    			  //s'il est premeir, go test dispo guichet
+    			  if(Client.file.estPremier(this)){
+    				  //guichet dispo -> on récupère son numéro et on entre dedans
+		    		  int guichet = Client.guichets.entrer(this);
+		    		  // Le client va directement au guichet si y'en a un de dispo
+		    		  if (guichet != -1) { 
+		    			  entrerGuichet(guichet);
+		        		  fin = true;
+		        		//si guichet pas dispo
+		    		  }else{
+		    			  //si la file d'attente est pas pleine, on y reste
+		    				  System.out.println(this.thread +" voit que tous les guichets sont occupés");
+			        		  System.out.println(this.thread +" reste dans la file d'attente et attend encore.");
+		    		  }
+    			  }
+    		  }
+    		  else{
+    			  fin = true;
+    		  }
+    	  }
+	      System.out.println(this.thread+": process terminé");
+   }    	  
+
    public void entrerGuichet(int numGuichet) {
 		
 	  //le client sort de la file d'attente
 	  file.sortir(this);
+	  System.out.println(this.thread + " quitte la file d'attente.");
+	  
 	  //puis il entre au guichet envoyé en param
-	  System.out.println(this.nom +" entre au guichet n°"+(numGuichet+1));
+	  System.out.println(this.thread +" entre au guichet n°"+(numGuichet+1));
 	  //maj de son état
 	  this.etat = ETAT_GUICHET;
 	  
@@ -99,9 +120,11 @@ public class Client extends Thread {
 	  try {sleep(2000 + timeToWait);}catch(InterruptedException e){}
 	  
 	  //une fois terminé, le client quitte le guicher puis le bureau de poste
-	  this.guichet.quitter(this, numGuichet);
+	  Client.guichets.quitter(this, numGuichet);
+	  System.out.println("(Guichet n°:"+numGuichet+" disponible)");
+	  
 	  //maj de son état
 	  this.etat = ETAT_PARTIR;
-	  System.out.println(this.nom + " " + this.etat);
+	  System.out.println(this.thread + " " + this.etat);
    }
 }

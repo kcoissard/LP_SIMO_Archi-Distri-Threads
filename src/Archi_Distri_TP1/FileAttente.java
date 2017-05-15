@@ -5,14 +5,11 @@ import java.util.ArrayList;
 import Archi_Distri_TP1.Client;
 
 public class FileAttente {
-	
-//ajout
-	//const
+
 	public static final int PLACES_FILE_ATTENTE = 4;
 	
-	//var
 	private int taille_file=PLACES_FILE_ATTENTE;
-	ArrayList<Client> fileAttente; 
+	private ArrayList<Client> fileAttente; 
 	
    public FileAttente(int taille_file) {
 	   fileAttente = new ArrayList<Client>(taille_file);
@@ -39,11 +36,11 @@ public class FileAttente {
    
    
    /*
-    * Retourne 0 si le client peut entrer dans la file
+    * Retourne l'index si le client peut entrer dans la file
     * Si oui, le client est alors automatiquement inséré dans la file.
     * Si non retourne -1 
     */
-   public int entrer(Client client) {
+   synchronized public int entrer(Client client) {
 	   int file = -1;
 	   	//on test s'il y a de la place dans la file
 	      if(fileAttente.size()<taille_file){
@@ -51,7 +48,9 @@ public class FileAttente {
 	    	  fileAttente.add(client);
 	    	  //index of --> si le client est présent dans l'ArrayList fileAttente return 0 sinon -1
 	    	  file = fileAttente.indexOf(client);
-	    	  System.out.println("Nb de personnes dans la file : "+fileAttente.size()+".");
+	    	  if(fileAttente.size()==4){
+	    		  System.out.println("Nb de personnes dans la file : "+fileAttente.size()+".");
+	    	  }
 	      } else{
 	    	  //si non, on le fait attendre puis on le fera sortir dans la main
 	       	  try {wait();}
